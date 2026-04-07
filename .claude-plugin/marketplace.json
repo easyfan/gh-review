@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "gh-review",
+  "description": "Daily GitHub activity review for Claude Code",
+  "owner": {
+    "name": "easyfan",
+    "email": "zhengfan@apache.org"
+  },
+  "plugins": [
+    {
+      "name": "gh-review",
+      "description": "Scans easyfan plugin repos for PR/Issue activity, generates reply drafts, and lets you confirm each response before publishing. Interactive mode shows pending drafts; cron mode silently queues drafts and notifies.",
+      "category": "workflow",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/easyfan/gh-review.git",
+        "sha": "c3115c43518a27df47ec98fd9e8a72c1eb8c4441"
+      },
+      "homepage": "https://github.com/easyfan/gh-review"
+    }
+  ]
+}
