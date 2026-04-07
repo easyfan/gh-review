@@ -1,4 +1,4 @@
-[English](README.md) | [中文](README-CN.md)
+[English](README.md) | [Chinese](README-zh.md)
 
 # gh-review
 
@@ -69,6 +69,7 @@ Drafts persist until you explicitly **publish** or **skip** them. Entries older 
 ### Option A — Claude Code plugin (recommended)
 
 ```bash
+/plugin marketplace add gh-review
 /plugin install gh-review@gh-review
 ```
 

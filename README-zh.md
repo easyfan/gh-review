@@ -1,4 +1,4 @@
-[English](README.md) | [中文](README-CN.md)
+[English](README.md) | [中文](README-zh.md)
 
 # gh-review
 
@@ -69,6 +69,7 @@ Claude Code 每日 GitHub 活动回顾——扫描插件仓库的 PR/Issue 动�
 ### 方式 A — Claude Code 插件（推荐）
 
 ```bash
+/plugin marketplace add gh-review
 /plugin install gh-review@gh-review
 ```
 
