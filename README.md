@@ -69,7 +69,7 @@ Drafts persist until you explicitly **publish** or **skip** them. Entries older 
 ### Option A — Claude Code plugin (recommended)
 
 ```bash
-/plugin marketplace add gh-review
+/plugin marketplace add easyfan/gh-review
 /plugin install gh-review@gh-review
 ```
 
