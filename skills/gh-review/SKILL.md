@@ -10,11 +10,14 @@ description: |
 
 以下路径为绝对路径，正文所有引用均使用此处定义，不得使用裸文件名：
 
+> **路径解析**：`<PROJECT_SLUG>` 由 Claude 在运行时自动推导——将当前工作目录的绝对路径中的 `/` 替换为 `-`（去掉开头的 `-`），例如 `/Users/alice/my-project` → `-Users-alice-my-project`。首次运行时请确认路径正确，或在 SKILL.md 中将占位符替换为实际值。
+
 | 变量 | 绝对路径 |
 |------|---------|
-| GH_PENDING | `~/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-pending.md` |
-| GH_ACTIVITY_LOG | `~/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-activity-log.md` |
-| GH_REFERENCE | `~/.claude/projects/-Users-zhengfan-cc-manager/memory/reference_gh_activity.md` |
+| GH_PENDING | `~/.claude/projects/<PROJECT_SLUG>/memory/gh-pending.md` |
+| GH_ACTIVITY_LOG | `~/.claude/projects/<PROJECT_SLUG>/memory/gh-activity-log.md` |
+| GH_REFERENCE | `~/.claude/projects/<PROJECT_SLUG>/memory/reference_gh_activity.md` |
+| GH_CRON_LOG | `/tmp/gh-review-cron.log` |
 
 **GH_ACTIVITY_LOG** 记录已发布回复的操作历史（发布时间、仓库、评论 URL）。
 **GH_REFERENCE** 记录 PR/Issue 状态快照，作为"上次检查状态"基线。
@@ -38,7 +41,7 @@ description: |
 **在执行任何扫描前**，先检测当前是否在交互式会话中：
 
 - **交互式**（用户直接输入 `/gh-review`）：
-  1. 先检查 GH_PENDING（`~/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-pending.md`）是否有未处理草稿（文件存在且含至少一个 `###` 草稿条目）→ 若有，进入「草稿处理模式」；若文件不存在或无有效条目，输出"暂无待处理草稿，进入扫描模式..."并直接进入扫描模式
+  1. 先检查 GH_PENDING 是否有未处理草稿（文件存在且含至少一个 `###` 草稿条目）→ 若有，进入「草稿处理模式」；若文件不存在或无有效条目，输出"暂无待处理草稿，进入扫描模式..."并直接进入扫描模式
   2. 若无 pending，进入「扫描模式」
 
 - **非交互式**（cron 调用，无 TTY）：
@@ -59,7 +62,7 @@ cron 调用示例（需更新 crontab）：
 
 ## 草稿处理模式（交互式 + pending 存在时）
 
-读取 `~/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-pending.md`，逐条展示：
+读取 GH_PENDING，逐条展示：
 
 ```
 📬 发现 N 条待处理草稿（来自 YYYY-MM-DD HH:MM 的 cron 扫描）
@@ -76,7 +79,7 @@ cron 调用示例（需更新 crontab）：
 
 用户选择后：
 - **发布**：调用 `gh pr comment` 或 `gh issue comment` 发布，记录到 GH_ACTIVITY_LOG
-- **编辑**：让用户修改草稿内容后再发布
+- **编辑**：原文展示当前草稿内容，提示用户输入修改后的版本，收到修改内容后再次展示并请求确认（"确认发布？[是/否]"），确认后发布并记录到 GH_ACTIVITY_LOG
 - **跳过（本次）**：保留在 pending，下次继续显示。草稿创建超过 7 天的条目在展示时标注 `[过期]`，用户可选择"批量清除过期草稿"将其永久移除。
 
 所有草稿处理完毕后，将"跳过"的条目保留，将"发布"和"编辑后发布"的条目从 GH_PENDING 中移除；**不整体清空文件**，保留 header 和未处理条目。
@@ -85,7 +88,12 @@ cron 调用示例（需更新 crontab）：
 
 ## 扫描模式
 
-> 进度提示要求：扫描开始时输出 `「正在扫描 GitHub 活动，请稍候...」`；Step 1 开始时输出 `「Step 1/5: 扫描 open PR...」`，完成后输出已检查数量；Step 2 开始时输出 `「Step 2/5: 扫描 open Issue...」`，完成后输出已检查数量；每处理完一个仓库输出一行进度，使扫描过程对用户可见。
+### 前置检查（扫描开始前执行）
+
+1. **gh 认证检查**：运行 `gh auth status`，若未认证则输出 `「请先运行 gh auth login 完成 GitHub 认证后再执行扫描」` 并终止扫描。
+2. **comment-reply 可用性**：确认 `comment-reply` Skill 可被调用。若不可用，输出 `「⚠️ comment-reply skill 未安装，回复草稿将无法自动生成（标注为 [草稿待生成]）。建议安装 comment-reply 以获取完整功能。」`，但不中断扫描——Step 3 中调用失败时按已有 fallback 处理。
+
+> 进度提示要求：扫描开始时输出 `「正在扫描 GitHub 活动，请稍候...」`；Step 1 开始时输出 `「Step 1/5: 扫描 open PR...」`，完成后输出已检查数量；Step 2 开始时输出 `「Step 2/5: 扫描 open Issue...」`，完成后输出已检查数量；Step 3 开始时输出 `「Step 3/5: 识别需要行动的项...」`；Step 4 开始时输出 `「Step 4/5: 写入草稿...」`，完成后输出本次写入草稿数量；Step 5 开始时输出 `「Step 5/5: 更新状态快照...」`，完成后输出 `「扫描完成」`。每处理完一个仓库输出一行进度，使扫描过程对用户可见。
 
 ### Step 1：扫描 open PR 状态
 
@@ -115,6 +123,8 @@ gh issue view <number> --repo <owner/repo> --json state,comments,closedAt,labels
 
 ### Step 3：识别需要行动的项
 
+首先读取 GH_REFERENCE，获取上次扫描记录的状态快照（若文件不存在则视为"首次扫描"，所有当前活动项均视为新发现）。将本次扫描结果与快照对比，找出有变化的条目（新评论、状态变更）。
+
 对每条有新评论或状态变化的条目，判断：
 - 他人留言且需要回应 → 使用 Skill tool 调用 `comment-reply`，传入评论全文和背景上下文（格式：`仓库：easyfan/xxx#N\n评论者：@用户名\n评论内容：...`），生成回复草稿。若 `comment-reply` Skill 调用失败，将原始评论内容写入 GH_PENDING 并标注 `[草稿待生成]`，确保条目不丢失。
 - 将被自动 bot 关闭但不是 duplicate → 生成"澄清草稿"
@@ -141,7 +151,7 @@ gh issue view <number> --repo <owner/repo> --json state,comments,closedAt,labels
 ```bash
 bash ~/.claude/hooks/notify-pending.sh
 ```
-若脚本执行失败（退出码非 0），在 cron log 末尾追加 `[NOTIFY_FAILED] 请手动检查 GH_PENDING 文件`，但不中断后续流程。
+若脚本执行失败（退出码非 0），在 GH_CRON_LOG 末尾追加 `[NOTIFY_FAILED] 请手动检查 GH_PENDING 文件`，但不中断后续流程。
 
 **交互式扫描完成后，输出摘要**：
 ```
@@ -154,7 +164,7 @@ bash ~/.claude/hooks/notify-pending.sh
 
 ---
 
-## 扫描输出格式（写入 cron log）
+## 扫描输出格式（写入 GH_CRON_LOG）
 
 ```
 === gh-review YYYY-MM-DD HH:MM ===
