@@ -1,0 +1,8 @@
+{
+  "name": "gh-review",
+  "version": "1.0.0",
+  "description": "Daily GitHub activity review for Claude Code — scans your plugin repos, generates reply drafts, and lets you confirm each response before publishing.",
+  "author": {
+    "name": "easyfan"
+  }
+}

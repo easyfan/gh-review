@@ -1,0 +1,33 @@
+{
+  "name": "gh-review",
+  "version": "1.0.0",
+  "description": "Daily GitHub activity review for Claude Code — scans easyfan plugin repos, generates reply drafts, and manages pending GitHub interactions",
+  "keywords": [
+    "claude-code",
+    "github",
+    "pr",
+    "issue",
+    "review",
+    "workflow",
+    "automation",
+    "skill"
+  ],
+  "author": {
+    "name": "easyfan"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/easyfan/gh-review.git"
+  },
+  "homepage": "https://github.com/easyfan/gh-review#readme",
+  "bugs": {
+    "url": "https://github.com/easyfan/gh-review/issues"
+  },
+  "files": [
+    ".claude-plugin/",
+    "skills/",
+    "install.sh",
+    "install.ps1"
+  ]
+}
