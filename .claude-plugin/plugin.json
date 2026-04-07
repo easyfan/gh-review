@@ -4,5 +4,17 @@
   "description": "Daily GitHub activity review for Claude Code — scans your plugin repos, generates reply drafts, and lets you confirm each response before publishing.",
   "author": {
     "name": "easyfan"
-  }
+  },
+  "homepage": "https://github.com/easyfan/gh-review",
+  "repository": "https://github.com/easyfan/gh-review",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "github",
+    "pr",
+    "issue",
+    "review",
+    "workflow",
+    "automation"
+  ]
 }
