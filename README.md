@@ -79,6 +79,9 @@ Drafts persist until you explicitly **publish** or **skip** them. Entries older 
 git clone https://github.com/easyfan/gh-review
 cd gh-review
 bash install.sh
+
+# custom install location
+CLAUDE_DIR=/path/to/.claude bash install.sh
 ```
 
 ### Option C — manual
@@ -129,6 +132,17 @@ For macOS persistent notifications on scan completion, see the [notify-pending.s
 └── skills/
     └── gh-review/
         └── SKILL.md        # skill definition
+```
+
+---
+
+## Evals
+
+Trigger-accuracy eval suite: `evals/evals.json` — 7 cases (5 positive triggers, 2 negative).
+
+Run with [`skill-test`](https://github.com/easyfan/skill-test):
+```bash
+/skill-test packer/gh-review
 ```
 
 ---

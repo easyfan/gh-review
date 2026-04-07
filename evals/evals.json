@@ -1,0 +1,51 @@
+[
+  {
+    "id": "trigger_slash_command",
+    "description": "Direct slash command invocation should trigger gh-review",
+    "user_message": "/gh-review",
+    "expected_behavior": "Skill triggers: checks gh-pending.md for drafts, then either shows pending drafts or enters scan mode",
+    "should_trigger": true
+  },
+  {
+    "id": "trigger_natural_language_cn",
+    "description": "Chinese natural language trigger",
+    "user_message": "github 最近有什么动静？",
+    "expected_behavior": "Skill triggers and scans GitHub PRs/Issues for easyfan repos",
+    "should_trigger": true
+  },
+  {
+    "id": "trigger_natural_language_en",
+    "description": "English natural language trigger",
+    "user_message": "review github",
+    "expected_behavior": "Skill triggers and enters interactive mode",
+    "should_trigger": true
+  },
+  {
+    "id": "trigger_pending_check",
+    "description": "Asking about pending comments triggers the skill",
+    "user_message": "有没有新的 PR 评论？",
+    "expected_behavior": "Skill triggers and checks GH_PENDING and/or scans GitHub",
+    "should_trigger": true
+  },
+  {
+    "id": "trigger_cron_mode",
+    "description": "Cron mode invocation",
+    "user_message": "/gh-review --mode=cron",
+    "expected_behavior": "Skill triggers in non-interactive mode: scan, write to GH_PENDING, run notify script, exit",
+    "should_trigger": true
+  },
+  {
+    "id": "negative_general_github",
+    "description": "General GitHub question should NOT trigger gh-review",
+    "user_message": "怎么用 git rebase？",
+    "expected_behavior": "Skill does NOT trigger — this is a general git question, not a review of easyfan repos",
+    "should_trigger": false
+  },
+  {
+    "id": "negative_other_repo",
+    "description": "GitHub activity for non-easyfan repos should NOT trigger",
+    "user_message": "帮我看看 microsoft/vscode 最近有什么 PR",
+    "expected_behavior": "Skill does NOT trigger — gh-review is scoped to easyfan repos only",
+    "should_trigger": false
+  }
+]
