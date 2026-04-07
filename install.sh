@@ -106,5 +106,8 @@ else
   echo ""
   echo "  Recommended crontab entry (daily at 9:03 AM):"
   echo "    3 9 * * * claude -p \"/gh-review --mode=cron\" --cwd ~/cc_manager >> /tmp/gh-review-cron.log 2>&1"
+  echo ""
+  echo "  macOS persistent notifications (modal alert + auto-open Claude):"
+  echo "    https://zhengeasyfan.blogspot.com/2026/04/wake-me-up-when-cronjob-ends.html"
 fi
 echo ""

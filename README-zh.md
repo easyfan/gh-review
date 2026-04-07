@@ -118,7 +118,11 @@ cp -r skills/gh-review ~/.claude/skills/
 3 9 * * * claude -p "/gh-review --mode=cron" --cwd ~/your-project >> /tmp/gh-review-cron.log 2>&1
 ```
 
-macOS 持久化通知配置参见 [notify-pending.sh 方案](https://github.com/easyfan/gh-review)。
+### macOS 持久化通知
+
+默认情况下，cron 输出静默写入日志文件，容易被忽略。如需在扫描完成后弹出持久弹窗、点击后自动打开 Claude 并注入上下文，参见：
+
+**[Wake me up, when cronjob ends](https://zhengeasyfan.blogspot.com/2026/04/wake-me-up-when-cronjob-ends.html)** — 完整方案：`notify-pending.sh` + `open-cc.sh`，实现 `display alert` 持久弹窗、iTerm2 AppleScript 窗口控制，以及根据 pending 草稿数量注入 Claude 启动上下文。
 
 ---
 

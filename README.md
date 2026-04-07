@@ -121,7 +121,11 @@ Add to your crontab (`crontab -e`):
 3 9 * * * claude -p "/gh-review --mode=cron" --cwd ~/your-project >> /tmp/gh-review-cron.log 2>&1
 ```
 
-For macOS persistent notifications on scan completion, see the [notify-pending.sh pattern](https://github.com/easyfan/gh-review).
+### macOS persistent notifications
+
+By default, cron output silently lands in a log file. To get a persistent modal alert that opens Claude with context when clicked, see:
+
+**[Wake me up, when cronjob ends](https://zhengeasyfan.blogspot.com/2026/04/wake-me-up-when-cronjob-ends.html)** — a guide covering `notify-pending.sh` + `open-cc.sh`: persistent `display alert` dialog, iTerm2 AppleScript window control, and context injection based on pending draft count.
 
 ---
 
