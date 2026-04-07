@@ -47,7 +47,7 @@ description: |
 - **非交互式**（cron 调用，无 TTY）：
   - 只执行「扫描模式」
   - 发现需回复项时写入 GH_PENDING，不发布
-  - 扫描结束后运行 `bash ~/.claude/hooks/notify-pending.sh`
+  - 若本次扫描写入了至少 1 条草稿，扫描结束后运行 `bash ~/.claude/hooks/notify-pending.sh`
 
 判断方式：检测 prompt 参数字符串是否包含 `--mode=cron`。含则为非交互式，否则为交互式。
 
