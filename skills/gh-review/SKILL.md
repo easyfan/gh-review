@@ -10,7 +10,7 @@ description: |
 
 以下路径为绝对路径，正文所有引用均使用此处定义，不得使用裸文件名：
 
-> **路径解析**：`<PROJECT_SLUG>` 由 Claude 在运行时自动推导——将当前工作目录的绝对路径中的 `/` 替换为 `-`（去掉开头的 `-`），例如 `/Users/alice/my-project` → `-Users-alice-my-project`。首次运行时请确认路径正确，或在 SKILL.md 中将占位符替换为实际值。
+> **路径解析**：`<PROJECT_SLUG>` 由 Claude 在运行时自动推导——将当前工作目录的绝对路径中的 `/` 替换为 `-`，并去掉开头的 `-`。例如 `/Users/alice/my-project` → `Users-alice-my-project`，对应路径为 `~/.claude/projects/Users-alice-my-project/memory/`。若当前工作目录为 `/Users/zhengfan/cc_manager`，则 `<PROJECT_SLUG>` = `Users-zhengfan-cc_manager`。首次运行时输出推导结果供用户确认。
 
 | 变量 | 绝对路径 |
 |------|---------|
@@ -19,8 +19,8 @@ description: |
 | GH_REFERENCE | `~/.claude/projects/<PROJECT_SLUG>/memory/reference_gh_activity.md` |
 | GH_CRON_LOG | `/tmp/gh-review-cron.log` |
 
-**GH_ACTIVITY_LOG** 记录已发布回复的操作历史（发布时间、仓库、评论 URL）。
-**GH_REFERENCE** 记录 PR/Issue 状态快照，作为"上次检查状态"基线。
+**GH_ACTIVITY_LOG** 记录已发布回复的操作历史（发布时间、仓库、评论 URL）；由草稿处理模式的"发布"动作追加写入，供用户回溯已回复记录。
+**GH_REFERENCE** 记录 PR/Issue 状态快照，作为"上次检查状态"基线；若文件不存在，视为首次扫描，所有当前活动项均视为新发现。
 
 **gh-pending.md 固定 header（清空时保留前两行）**：
 ```
@@ -98,8 +98,11 @@ cron 调用示例（需更新 crontab）：
 ### Step 1：扫描 open PR 状态
 
 ```bash
-gh api "search/issues?q=author:easyfan+type:pr+state:open" --jq '.items[] | {repo: .repository_url, number: .number, title: .title}'
+gh api "search/issues?q=author:easyfan+type:pr+state:open&per_page=100" --jq '.items[] | {repo: .repository_url, number: .number, title: .title}'
 ```
+
+`repository_url` 字段格式为 `https://api.github.com/repos/<owner>/<repo>`，需提取 `<owner>/<repo>` 部分（去掉前缀 `https://api.github.com/repos/`）作为 repo 参数。
+若结果为空（items 为空数组），输出 `「未发现 open PR」` 并继续 Step 2。
 
 对每个 open PR：
 ```bash
@@ -111,8 +114,11 @@ gh pr view <number> --repo <owner/repo> --json state,mergedAt,comments,reviews
 ### Step 2：扫描 open Issue 状态
 
 ```bash
-gh api "search/issues?q=author:easyfan+type:issue+state:open" --jq '.items[] | {repo: .repository_url, number: .number, title: .title}'
+gh api "search/issues?q=author:easyfan+type:issue+state:open&per_page=100" --jq '.items[] | {repo: .repository_url, number: .number, title: .title}'
 ```
+
+`repository_url` 字段同上，需提取 `<owner>/<repo>` 部分。
+若结果为空（items 为空数组），输出 `「未发现 open Issue」` 并继续 Step 3。
 
 对每个 open Issue：
 ```bash
@@ -123,7 +129,9 @@ gh issue view <number> --repo <owner/repo> --json state,comments,closedAt,labels
 
 ### Step 3：识别需要行动的项
 
-首先读取 GH_REFERENCE，获取上次扫描记录的状态快照（若文件不存在则视为"首次扫描"，所有当前活动项均视为新发现）。将本次扫描结果与快照对比，找出有变化的条目（新评论、状态变更）。
+首先读取 GH_REFERENCE，获取上次扫描记录的状态快照（若文件不存在则视为"首次扫描"，所有当前活动项均视为新发现；首次扫描时在 GH_CRON_LOG 中注明 `[FIRST_RUN]`）。
+
+将本次扫描结果与快照对比时，以 `<owner>/<repo>#<number>` 为唯一 key 进行去重：同一 key 在本次扫描中只处理一次，避免 cron 重复扫描重复写入相同草稿。
 
 对每条有新评论或状态变化的条目，判断：
 - 他人留言且需要回应 → 使用 Skill tool 调用 `comment-reply`，传入评论全文和背景上下文（格式：`仓库：easyfan/xxx#N\n评论者：@用户名\n评论内容：...`），生成回复草稿。若 `comment-reply` Skill 调用失败，将原始评论内容写入 GH_PENDING 并标注 `[草稿待生成]`，确保条目不丢失。
@@ -160,7 +168,7 @@ bash ~/.claude/hooks/notify-pending.sh
 
 ### Step 5：更新 GH_REFERENCE（reference_gh_activity.md）
 
-更新 GH_REFERENCE 中每条记录状态：已 merge/closed 标为 `[DONE]`，新发现项加入待跟进列表，注明最后检查时间。
+更新 GH_REFERENCE 中每条记录状态：已 merge/closed 标为 `[DONE]`，新发现项加入待跟进列表，注明最后检查时间。若 GH_REFERENCE 不存在则新建，写入本次所有扫描结果作为初始快照。
 
 ---
 
@@ -180,5 +188,6 @@ pending 共 2 条 -> 通知已发送
 ## 注意事项
 
 - 非交互式模式**绝不**直接调用 `gh comment`，只写 pending 文件
-- 若 `gh` API rate limit 触发，跳过该仓库并在 log 中标注 `[RATE_LIMITED]`
+- 若 `gh` API rate limit 触发（HTTP 403/429），跳过该仓库并在 log 中标注 `[RATE_LIMITED]`；若网络超时（curl 超时或 gh 命令无响应超过 30 秒），跳过该仓库并标注 `[TIMEOUT]`，继续处理下一条
+- 搜索 API 默认返回最多 30 条；`per_page=100` 已覆盖绝大多数场景；若 `total_count` 超过 100，在 log 中追加 `[WARN] 搜索结果超过 100 条，部分结果可能未处理` 并继续
 - GH_PENDING 草稿保留直到用户明确选择"发布"或"跳过（本次）"，不自动清除；7 天后自动标注 `[过期]`
