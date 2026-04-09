@@ -10,13 +10,11 @@ description: |
 
 以下路径为绝对路径，正文所有引用均使用此处定义，不得使用裸文件名：
 
-> **路径解析**：`<PROJECT_SLUG>` 由 Claude 在运行时自动推导——将当前工作目录的绝对路径中的 `/` 替换为 `-`，并去掉开头的 `-`。例如 `/Users/alice/my-project` → `Users-alice-my-project`，对应路径为 `~/.claude/projects/Users-alice-my-project/memory/`。若当前工作目录为 `/Users/zhengfan/cc_manager`，则 `<PROJECT_SLUG>` = `Users-zhengfan-cc_manager`。首次运行时输出推导结果供用户确认。
-
 | 变量 | 绝对路径 |
 |------|---------|
-| GH_PENDING | `~/.claude/projects/<PROJECT_SLUG>/memory/gh-pending.md` |
-| GH_ACTIVITY_LOG | `~/.claude/projects/<PROJECT_SLUG>/memory/gh-activity-log.md` |
-| GH_REFERENCE | `~/.claude/projects/<PROJECT_SLUG>/memory/reference_gh_activity.md` |
+| GH_PENDING | `/Users/zhengfan/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-pending.md` |
+| GH_ACTIVITY_LOG | `/Users/zhengfan/.claude/projects/-Users-zhengfan-cc-manager/memory/gh-activity-log.md` |
+| GH_REFERENCE | `/Users/zhengfan/.claude/projects/-Users-zhengfan-cc-manager/memory/reference_gh_activity.md` |
 | GH_CRON_LOG | `/tmp/gh-review-cron.log` |
 
 **GH_ACTIVITY_LOG** 记录已发布回复的操作历史（发布时间、仓库、评论 URL）；由草稿处理模式的"发布"动作追加写入，供用户回溯已回复记录。
