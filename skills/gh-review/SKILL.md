@@ -132,6 +132,7 @@ gh issue view <number> --repo <owner/repo> --json state,comments,closedAt,labels
 将本次扫描结果与快照对比时，以 `<owner>/<repo>#<number>` 为唯一 key 进行去重：同一 key 在本次扫描中只处理一次，避免 cron 重复扫描重复写入相同草稿。
 
 对每条有新评论或状态变化的条目，判断：
+- **最后一条评论作者是 `easyfan` 本人** → 跳过，无需草稿（已自行处理）
 - 他人留言且需要回应 → 使用 Skill tool 调用 `comment-reply`，传入评论全文和背景上下文（格式：`仓库：easyfan/xxx#N\n评论者：@用户名\n评论内容：...`），生成回复草稿。若 `comment-reply` Skill 调用失败，将原始评论内容写入 GH_PENDING 并标注 `[草稿待生成]`，确保条目不丢失。
 - 将被自动 bot 关闭但不是 duplicate → 生成"澄清草稿"
 - 状态变化（merge/close）→ 仅更新记录，无需草稿
