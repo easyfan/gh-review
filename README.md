@@ -153,6 +153,15 @@ Run with [`skill-test`](https://github.com/easyfan/skill-test):
 
 ## Changelog
 
+### v1.1.0 (2026-04-30)
+
+Smart skip for already-handled items:
+
+| Item | Change |
+|------|--------|
+| Skip own comments | If the last comment on a PR/Issue was posted by `easyfan`, the item is skipped — no draft generated |
+| Deduplication | Avoids redundant drafts for items you already responded to |
+
 ### v1.0.0 (2026-04-08)
 - Initial release
 - Interactive and cron modes

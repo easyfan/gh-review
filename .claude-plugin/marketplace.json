@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "gh-review",
-      "description": "Scans easyfan plugin repos for PR/Issue activity, generates reply drafts, and lets you confirm each response before publishing. Interactive mode shows pending drafts; cron mode silently queues drafts and notifies.",
+      "description": "Scans easyfan plugin repos for PR/Issue activity, generates reply drafts, and lets you confirm each response before publishing. Automatically skips items where the last comment is already from you. Interactive mode shows pending drafts; cron mode silently queues drafts and notifies.",
       "category": "workflow",
       "source": {
         "source": "url",

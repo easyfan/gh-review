@@ -139,6 +139,17 @@ cp -r skills/gh-review ~/.claude/skills/
 
 ## 更新日志
 
+### v1.1.0（2026-04-30）
+
+自动跳过已处理项目：
+
+| 变更项 | 说明 |
+|--------|------|
+| 跳过自己的评论 | 最后一条评论作者是 `easyfan` 本人时，跳过该条目，不生成草稿 |
+| 去重优化 | 避免为已回复的 PR/Issue 重复生成草稿 |
+
+See [README.md](README.md) for full English release notes.
+
 ### v1.0.0（2026-04-08）
 - 首次发布
 - 支持交互模式和 cron 模式

@@ -1,6 +1,6 @@
 {
   "name": "gh-review",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Daily GitHub activity review for Claude Code — scans easyfan plugin repos, generates reply drafts, and manages pending GitHub interactions",
   "keywords": [
     "claude-code",
